@@ -7,7 +7,7 @@ import sklearn
 from sklearn.preprocessing import StandardScaler
 app = Flask(__name__)
 model = pickle.load(open('random_forest_regression_model.pkl', 'rb')) #model is loaded here.
-
+model1 = pickle.load(open('random_forest_regression_model_newdatamodel.pkl', 'rb'))
 @app.route('/',methods=['GET'])
 def Home():
     return render_template('index.html')
@@ -22,6 +22,14 @@ def predict():
         Present_Price=float(request.form['Present_Price'])
         Kms_Driven=int(request.form['Kms_Driven'])
         Kms_Driven2=np.log(Kms_Driven)
+        mileage=int(request.form['mileage'])
+        mileage=np.log(mileage)
+        engine=int(request.form['engine'])
+        engine=np.log(engine)
+        seats=int(request.form['seats'])
+        max_power=int(request.form['max_power'])
+        
+        
         Owner=int(request.form['Owner'])
         Fuel_Type_Petrol=request.form['Fuel_Type_Petrol']
         log_Present_Price=np.log(Present_Price)
@@ -42,12 +50,26 @@ def predict():
             Transmission_Mannual=1
         else:
             Transmission_Mannual=0
+
+        owner_Fourth_Above_Owner=0
+        owner_Second_Owner=1
+        owner_Test_Drive_Car=0
+        owner_Third_Owner=0
         prediction=model.predict([[Present_Price,Kms_Driven2,Owner,Year,Fuel_Type_Diesel,Fuel_Type_Petrol,Seller_Type_Individual,Transmission_Mannual,log_Present_Price]])
+        prediction1=model1.predict([[Kms_Driven2, mileage, engine, max_power, seats, Fuel_Type_Diesel,
+       Fuel_Type_Diesel, Fuel_Type_Petrol, Seller_Type_Individual,
+       Seller_Type_Individual, Transmission_Mannual,
+       owner_Fourth_Above_Owner, owner_Second_Owner,
+       owner_Test_Drive_Car, owner_Third_Owner, Year]])
+        #prediction1=model.predict([[Kms_Driven2, mileage, engine, max_power, seats,  Fuel_Type_Diesel, Fuel_Type_Petrol, , Transmission_Mannual, Year]])
+        
         output=round(prediction[0],2)
+        output1=round(prediction1[0],2)
+        
         if output<0:
             return render_template('index.html',prediction_texts="Sorry you cannot sell this car")
         else:
-            return render_template('index.html',prediction_text="You Can Sell The Car at {}".format(output))
+            return render_template('index.html',prediction_text="You Can Sell The Car at {} and {}".format(output,output1))
     else:
         return render_template('index.html')
 
